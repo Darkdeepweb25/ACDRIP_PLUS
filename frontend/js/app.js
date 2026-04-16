@@ -2098,32 +2098,17 @@ switchSection = function(section) {
     // Auto-fill and Auto-init logic for specialized modules
     if (section === 'darkweb') {
         const targetInput = document.getElementById('darkwebTarget');
-        if (state.lastScannedIP && (!targetInput.value || targetInput.value === '')) {
-            targetInput.value = state.lastScannedIP;
-            runDarkWebScan(); // Automatically show data if we have a target
+        if (!targetInput.value || targetInput.value === '') {
+            targetInput.value = state.lastScannedIP || 'acme.corp';
+            runDarkWebScan(); // Automatically show data
         }
     }
     
     if (section === 'quantum') {
         const targetInput = document.getElementById('quantumIP');
-        if (state.lastScannedIP && (!targetInput.value || targetInput.value === '')) {
-            targetInput.value = state.lastScannedIP;
-            runQuantumScan(); // Automatically show data if we have a target
-        } else if (document.getElementById('quantumResults').classList.contains('hidden')) {
-            // If just opening for the first time without a target, show empty gauge
-            setTimeout(() => {
-                const canvas = document.getElementById('quantumGauge');
-                if (canvas) {
-                    const ctx = canvas.getContext('2d');
-                    const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 10;
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
-                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-                    ctx.lineWidth = 14;
-                    ctx.stroke();
-                }
-            }, 100);
+        if (!targetInput.value || targetInput.value === '') {
+            targetInput.value = state.lastScannedIP || 'acme.corp';
+            runQuantumScan(); // Automatically show data
         }
     }
 };
