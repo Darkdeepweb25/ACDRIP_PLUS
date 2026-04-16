@@ -1787,10 +1787,10 @@ function runDarkWebScan() {
         showToast('Please enter a target domain or IP', 'error');
         return;
     }
-    document.getElementById('darkweLoading').classList.remove('hidden');
+    document.getElementById('darkwebLoading').classList.remove('hidden');
     document.getElementById('darkwebResults').classList.add('hidden');
     setTimeout(() => {
-        document.getElementById('darkweLoading').classList.add('hidden');
+        document.getElementById('darkwebLoading').classList.add('hidden');
         document.getElementById('darkwebResults').classList.remove('hidden');
         renderDarkWebData(target);
         showToast('Dark Web Scan Completed!', 'success');
@@ -2098,16 +2098,18 @@ switchSection = function(section) {
     // Auto-fill and Auto-init logic for specialized modules
     if (section === 'darkweb') {
         const targetInput = document.getElementById('darkwebTarget');
-        if (!targetInput.value || targetInput.value === '') {
-            targetInput.value = state.lastScannedIP || 'acme.corp';
+        const resultsHidden = document.getElementById('darkwebResults').classList.contains('hidden');
+        if (!targetInput.value || targetInput.value === '' || resultsHidden) {
+            targetInput.value = targetInput.value || state.lastScannedIP || 'acme.corp';
             runDarkWebScan(); // Automatically show data
         }
     }
     
     if (section === 'quantum') {
         const targetInput = document.getElementById('quantumIP');
-        if (!targetInput.value || targetInput.value === '') {
-            targetInput.value = state.lastScannedIP || 'acme.corp';
+        const resultsHidden = document.getElementById('quantumResults').classList.contains('hidden');
+        if (!targetInput.value || targetInput.value === '' || resultsHidden) {
+            targetInput.value = targetInput.value || state.lastScannedIP || 'acme.corp';
             runQuantumScan(); // Automatically show data
         }
     }

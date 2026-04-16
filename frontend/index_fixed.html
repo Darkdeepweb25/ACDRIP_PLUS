@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <meta content="ACDRIP+ &mdash; Autonomous Cyber Defense, Risk Intelligence &amp; Pre-Breach Simulation Platform. Scan networks, detect vulnerabilities, predict financial risk, and simulate attack chains." name="description"/>
+  <meta content="cybersecurity, vulnerability scanner, risk intelligence, attack simulation, ACDRIP+" name="keywords"/>
+  <meta content="ACDRIP+ Team" name="author"/>
+  <title>
+   ACDRIP+ | Autonomous Cyber Defense, Risk Intelligence &amp; Pre-Breach Simulation Platform
+  </title>
+  <link href="/static/css/style.css?v=1.0.1" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js">
+  </script>
+ </head>
+ <body>
+  <!-- ═══════════════ TOAST NOTIFICATIONS ═══════════════ -->
+  <div class="toast-container" id="toastContainer">
+  </div>
+  <!-- ═══════════════ LANDING PAGE ═══════════════ -->
+  <div id="landing-page">
+   <div class="grid-bg">
+   </div>
+   <div class="particles" id="particles">
+   </div>
+   <!-- Navigation -->
+   <nav class="nav-bar">
+    <div class="nav-logo">
+     ACDRIP
+     <span>
+      +
+     </span>
+    </div>
+    <div class="nav-actions">
+     <button class="btn btn-ghost" onclick="openModal('login')">
+      Log In
+     </button>
+     <button class="btn btn-primary" onclick="openModal('register')">
+      Register
+     </button>
+    </div>
+   </nav>
+   <!-- Hero Section -->
+   <section class="hero">
+    <div class="hero-badge">
+     <span class="dot">
+     </span>
+     AI-Powered Cyber Defense Platform
+    </div>
+    <h1>
+     ACDRIP
+     <span class="plus">
+      +
+     </span>
+    </h1>
+    <p class="subtitle">
+     Autonomous Cyber Defense, Risk Intelligence &amp; Pre-Breach Simulation Platform.
+            Scan networks, detect vulnerabilities, predict financial risk, and simulate attack chains in real time.
+    </p>
+    <!-- Scan Box -->
+    <div class="scan-box">
+     <div class="scan-input-group">
+      <input autocomplete="off" id="landingScanInput" placeholder="Enter IP Address (e.g., 192.168.1.1)" spellcheck="false" type="text"/>
+      <button class="scan-btn" id="landingScanBtn" onclick="runPublicScan()">
+       <span>
+        ⚡
+       </span>
+       Scan Network
+      </button>
+     </div>
+    </div>
+    <!-- Stats -->
+    <div class="stats-bar">
+     <div class="stat-item">
+      <div class="stat-value" id="statScans">
+       0
+      </div>
+      <div class="stat-label">
+       Networks Scanned
+      </div>
+     </div>
+     <div class="stat-item">
+      <div class="stat-value" id="statVulns">
+       0
+      </div>
+      <div class="stat-label">
+       Vulnerabilities Found
+      </div>
+     </div>
+     <div class="stat-item">
+      <div class="stat-value" id="statCVEs">
+       24,800+
+      </div>
+      <div class="stat-label">
+       CVE Database
+      </div>
+     </div>
+     <div class="stat-item">
+      <div class="stat-value">
+       99.7%
+      </div>
+      <div class="stat-label">
+       Detection Rate
+      </div>
+     </div>
+    </div>
+   </section>
+  </div>
+  <!-- Scan Results (Hidden initially) -->
+  <div class="scan-results hidden" id="landingResults">
+   <div class="results-header">
+    <h2>
+     🔍 Scan Results
+    </h2>
+    <button class="btn btn-secondary btn-sm" onclick="closeLandingResults()">
+     ✕ Close
+    </button>
+   </div>
+   <div id="landingResultsContent">
+   </div>
+  </div>
+  <!-- Features -->
+  <section class="features">
+   <div class="feature-card">
+    <div class="feature-icon" style="background: var(--cyan-dim); color: var(--cyan);">
+     🔍
+    </div>
+    <h3>
+     Network Scanner
+    </h3>
+    <p>
+     Advanced Nmap-powered scanning with port detection, service enumeration, and OS fingerprinting.
+    </p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon" style="background: var(--purple-dim); color: var(--purple);">
+     🧠
+    </div>
+    <h3>
+     AI Risk Prediction
+    </h3>
+    <p>
+     Machine learning models estimate financial loss, attack probability, and risk levels.
+    </p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon" style="background: var(--red-dim); color: var(--red);">
+     ⚔️
+    </div>
+    <h3>
+     Attack Simulation
+    </h3>
+    <p>
+     Simulate multi-phase attack chains with MITRE ATT&amp;CK technique mapping.
+    </p>
+   </div>
+   <div class="feature-card">
+    <div class="feature-icon" style="background: var(--green-dim); color: var(--green);">
+     📡
+    </div>
+    <h3>
+     24/7 Monitoring
+    </h3>
+    <p>
+     Continuous IP monitoring with real-time alerts for port changes and threats.
+    </p>
+   </div>
+  </section>
+  <!-- ═══════════════ AUTH MODALS ═══════════════ -->
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+   <div class="modal" style="position: relative;">
+    <button class="modal-close" onclick="closeModal('login')">
+     ✕
+    </button>
+    <div class="modal-title">
+     Welcome Back
+    </div>
+    <div class="modal-subtitle">
+     Sign in to your ACDRIP+ account
+    </div>
+    <form onsubmit="handleLogin(event)">
+     <div class="form-group">
+      <label class="form-label">
+       Email
+      </label>
+      <input class="form-input" id="loginEmail" placeholder="you@example.com" required="" type="email"/>
+     </div>
+     <div class="form-group">
+      <label class="form-label">
+       Password
+      </label>
+      <input class="form-input" id="loginPassword" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required="" type="password"/>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" style="width:100%" type="submit">
+       Sign In
+      </button>
+     </div>
+    </form>
+    <div class="auth-divider">
+     or
+    </div>
+    <button class="btn btn-secondary" onclick="closeModal('login'); openModal('register')" style="width:100%">
+     Create an Account
+    </button>
+   </div>
+  </div>
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="registerModal">
+   <div class="modal" style="position: relative;">
+    <button class="modal-close" onclick="closeModal('register')">
+     ✕
+    </button>
+    <div class="modal-title">
+     Get Started
+    </div>
+    <div class="modal-subtitle">
+     Create your ACDRIP+ account
+    </div>
+    <form onsubmit="handleRegister(event)">
+     <div class="form-group">
+      <label class="form-label">
+       Full Name
+      </label>
+      <input class="form-input" id="regName" placeholder="John Doe" required="" type="text"/>
+     </div>
+     <div class="form-group">
+      <label class="form-label">
+       Email
+      </label>
+      <input class="form-input" id="regEmail" placeholder="you@example.com" required="" type="email"/>
+     </div>
+     <div class="form-group">
+      <label class="form-label">
+       Password
+      </label>
+      <input class="form-input" id="regPassword" minlength="8" placeholder="Min. 8 characters" required="" type="password"/>
+     </div>
+     <div class="modal-footer">
+      <button class="btn btn-primary btn-lg" style="width:100%" type="submit">
+       Create Account
+      </button>
+     </div>
+    </form>
+    <div class="auth-divider">
+     or
+    </div>
+    <button class="btn btn-secondary" onclick="closeModal('register'); openModal('login')" style="width:100%">
+     Sign In Instead
+    </button>
+   </div>
+  </div>
+  <!-- ═══════════════ DASHBOARD ═══════════════ -->
+  <div id="dashboard">
+   <!-- Sidebar -->
+   <aside class="sidebar">
+    <div class="sidebar-header">
+     <div class="sidebar-logo">
+      ACDRIP+
+     </div>
+     <div class="sidebar-logo-sub">
+      Autonomous Cyber Defense Platform
+     </div>
+    </div>
+    <nav class="sidebar-nav">
+     <div class="nav-item active" data-section="scanner" onclick="switchSection('scanner')">
+      <span class="icon">
+       🔍
+      </span>
+      Network Scanner
+     </div>
+     <div class="nav-item" data-section="risk" onclick="switchSection('risk')">
+      <span class="icon">
+       🧠
+      </span>
+      Risk Prediction
+     </div>
+     <div class="nav-item" data-section="simulation" onclick="switchSection('simulation')">
+      <span class="icon">
+       ⚔️
+      </span>
+      Attack Simulation
+     </div>
+     <div class="nav-item" data-section="monitoring" onclick="switchSection('monitoring')">
+      <span class="icon">
+       📡
+      </span>
+      24/7 Monitoring
+      <span class="badge hidden" id="alertBadge">
+       0
+      </span>
+     </div>
+     <div class="nav-item" data-section="reports" onclick="switchSection('reports')">
+      <span class="icon">
+       📄
+      </span>
+      Reports
+     </div>
+     <div class="nav-item" data-section="threat-intel" onclick="switchSection('threat-intel')">
+      <span class="icon">
+       🌐
+      </span>
+      Threat Intelligence
+     </div>
+     <div class="nav-item" data-section="mitre" onclick="switchSection('mitre')">
+      <span class="icon">
+       🛡️
+      </span>
+      MITRE ATT&amp;CK Matrix
+     </div>
+     <div class="nav-item" data-section="darkweb" onclick="switchSection('darkweb')">
+      <span class="icon">
+       🕸️
+      </span>
+      Dark Web Exposure
+     </div>
+     <div class="nav-item" data-section="quantum" onclick="switchSection('quantum')">
+      <span class="icon">
+       ⚛️
+      </span>
+      Quantum Threat Intel
+     </div>
+    </nav>
+    <div class="sidebar-footer">
+     <div class="user-card" onclick="handleLogout()">
+      <div class="user-avatar" id="userAvatar">
+       U
+      </div>
+      <div class="user-info">
+       <div class="user-name" id="userName">
+        User
+       </div>
+       <div class="user-email" id="userEmail">
+        user@example.com
+       </div>
+      </div>
+      <span style="color: var(--text-muted); font-size: 14px;" title="Logout">
+       ⏻
+      </span>
+     </div>
+    </div>
+   </aside>
+   <!-- Main Content -->
+   <main class="main-content">
+    <!-- ===== 1. NETWORK SCANNER ===== -->
+    <div class="section active" id="section-scanner">
+     <div class="page-header">
+      <h1 class="page-title">
+       🔍 Network Scanner
+      </h1>
+      <p class="page-subtitle">
+       Scan targets for open ports, services, and vulnerabilities
+      </p>
+     </div>
+     <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+       <div class="card-title">
+        <span class="icon">
+         ⚡
+        </span>
+        New Scan
+       </div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+       <input class="form-input form-input-mono" id="dashScanInput" placeholder="Enter target IP address (e.g., 192.168.1.1)" style="flex: 1;" type="text"/>
+       <button class="btn btn-primary" id="dashScanBtn" onclick="runDashboardScan()">
+        🚀 Run Scan
+       </button>
+      </div>
+     </div>
+     <div class="hidden" id="dashScanLoading">
+      <div class="loading-overlay">
+       <div class="spinner-lg">
+       </div>
+       <div>
+        Scanning target network
+        <span class="dots">
+        </span>
+       </div>
+      </div>
+     </div>
+     <div class="hidden" id="dashScanResults">
+     </div>
+     <!-- Scan History -->
+     <div class="card" style="margin-top: 24px;">
+      <div class="card-header">
+       <div class="card-title">
+        <span class="icon">
+         📋
+        </span>
+        Scan History
+       </div>
+       <button class="btn btn-ghost btn-sm" onclick="loadScanHistory()">
+        &orarr; Refresh
+       </button>
+      </div>
+      <div id="scanHistoryTable">
+       <div class="empty-state">
+        <div class="icon">
+         📋
+        </div>
+        <h3>
+         No scans yet
+        </h3>
+        <p>
+         Run your first scan to see results here
+        </p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div>
+  <!-- ===== 2. RISK PREDICTION ===== -->
+  <div class="section" id="section-risk">
+   <div class="page-header">
+    <h1 class="page-title">
+     🧠 Risk Prediction Engine
+    </h1>
+    <p class="page-subtitle">
+     AI-powered financial risk assessment from cyber attacks
+    </p>
+   </div>
+   <!-- IP Search Bar for Auto-Fill -->
+   <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🔍
+      </span>
+      Load from Scanned IP
+     </div>
+    </div>
+    <div style="display: flex; gap: 12px;">
+     <input class="form-input form-input-mono" id="riskIPSearch" placeholder="Enter IP address to auto-fill from scan data (e.g., 192.168.1.1)" style="flex: 1;" type="text"/>
+     <button class="btn btn-secondary" id="riskFillBtn" onclick="autoFillRiskFromIP()">
+      🔍 Load from Scan
+     </button>
+    </div>
+    <div class="hidden" id="riskAutoFillInfo" style="margin-top: 12px;">
+    </div>
+   </div>
+   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <!-- Input Form -->
+    <div class="card">
+     <div class="card-header">
+      <div class="card-title">
+       <span class="icon">
+        💰
+       </span>
+       Risk Parameters
+      </div>
+     </div>
+     <div class="form-group">
+      <label class="form-label">
+       Total Financial Assets (₹)
+      </label>
+      <input class="form-input form-input-mono" id="riskAssets" placeholder="e.g., 10000000" type="number" value="10000000"/>
+     </div>
+     <div class="form-row">
+      <div class="form-group">
+       <label class="form-label">
+        Critical Vulnerabilities
+       </label>
+       <input class="form-input" id="riskCritical" max="50" min="0" type="number" value="3"/>
+      </div>
+      <div class="form-group">
+       <label class="form-label">
+        High Vulnerabilities
+       </label>
+       <input class="form-input" id="riskHigh" max="50" min="0" type="number" value="5"/>
+      </div>
+     </div>
+     <div class="form-row">
+      <div class="form-group">
+       <label class="form-label">
+        Open Ports
+       </label>
+       <input class="form-input" id="riskPorts" max="100" min="0" type="number" value="8"/>
+      </div>
+      <div class="form-group">
+       <label class="form-label">
+        Employee Count
+       </label>
+       <input class="form-input" id="riskEmployees" min="1" type="number" value="50"/>
+      </div>
+     </div>
+     <div class="form-row">
+      <div class="form-group">
+       <label class="form-checkbox">
+        <input checked="" id="riskFirewall" type="checkbox"/>
+        Has Firewall
+       </label>
+      </div>
+      <div class="form-group">
+       <label class="form-checkbox">
+        <input id="riskIDS" type="checkbox"/>
+        Has IDS/IPS
+       </label>
+      </div>
+     </div>
+     <div class="form-group">
+      <label class="form-label">
+       Industry Risk Factor (0.0 - 1.0)
+      </label>
+      <input class="form-input" id="riskIndustry" max="1" min="0" step="0.1" type="number" value="0.6"/>
+     </div>
+     <button class="btn btn-primary btn-lg" onclick="runRiskPrediction()" style="width: 100%">
+      🧠 Predict Risk
+     </button>
+    </div>
+    <!-- Results -->
+    <div id="riskResults">
+     <div class="card">
+      <div class="empty-state">
+       <div class="icon">
+        🧠
+       </div>
+       <h3>
+        Ready to Predict
+       </h3>
+       <p>
+        Search an IP to auto-fill parameters, enter your asset value, and run the ML model to predict financial risk
+       </p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- ===== 3. ATTACK SIMULATION ===== -->
+  <div class="section" id="section-simulation">
+   <div class="page-header">
+    <h1 class="page-title">
+     ⚔️ Attack Simulation Engine
+    </h1>
+    <p class="page-subtitle">
+     Simulate multi-phase cyber attack chains against targets
+    </p>
+   </div>
+   <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🎯
+      </span>
+      Simulation Target
+     </div>
+    </div>
+    <div style="display: flex; gap: 12px;">
+     <input class="form-input form-input-mono" id="simTarget" placeholder="Enter target IP address" style="flex: 1;" type="text"/>
+     <input class="form-input form-input-mono" id="simScanId" placeholder="Scan ID (auto-detected)" style="width: 200px;" type="text"/>
+     <button class="btn btn-danger" onclick="runSimulation()">
+      ⚔️ Simulate Attack
+     </button>
+    </div>
+    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+     💡 Tip: Enter an IP that was previously scanned to auto-load vulnerability data and chaining analysis.
+    </p>
+   </div>
+   <div class="hidden" id="simLoading">
+    <div class="loading-overlay">
+     <div class="spinner-lg">
+     </div>
+     <div>
+      Simulating attack chain
+      <span class="dots">
+      </span>
+     </div>
+    </div>
+   </div>
+   <div class="hidden" id="simResults">
+   </div>
+  </div>
+  <!-- ===== 4. 24/7 MONITORING ===== -->
+  <div class="section" id="section-monitoring">
+   <div class="page-header">
+    <h1 class="page-title">
+     📡 24/7 Alert Monitoring
+    </h1>
+    <p class="page-subtitle">
+     Continuous IP monitoring with real-time change detection
+    </p>
+   </div>
+   <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       ➕
+      </span>
+      Add Monitor
+     </div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: flex-end;">
+     <div style="flex: 1;">
+      <label class="form-label">
+       Target IP
+      </label>
+      <input class="form-input form-input-mono" id="monitorIP" placeholder="192.168.1.1" type="text"/>
+     </div>
+     <div style="width: 180px;">
+      <label class="form-label">
+       Interval (seconds)
+      </label>
+      <input class="form-input" id="monitorInterval" min="60" type="number" value="300"/>
+     </div>
+     <button class="btn btn-primary" onclick="startMonitoring()" style="height: 46px;">
+      📡 Start Monitor
+     </button>
+    </div>
+   </div>
+   <!-- Active Monitors -->
+   <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🖥️
+      </span>
+      Active Monitors
+     </div>
+     <button class="btn btn-ghost btn-sm" onclick="loadMonitorStatus()">
+      &orarr; Refresh
+     </button>
+    </div>
+    <div id="monitorsList">
+     <div class="empty-state">
+      <div class="icon">
+       📡
+      </div>
+      <h3>
+       No active monitors
+      </h3>
+      <p>
+       Add an IP to start continuous monitoring
+      </p>
+     </div>
+    </div>
+   </div>
+   <!-- Alerts -->
+   <div class="card">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🔔
+      </span>
+      Recent Alerts
+     </div>
+     <button class="btn btn-ghost btn-sm" onclick="loadAlerts()">
+      &orarr; Refresh
+     </button>
+    </div>
+    <div id="alertsList">
+     <div class="empty-state">
+      <div class="icon">
+       🔔
+      </div>
+      <h3>
+       No alerts yet
+      </h3>
+      <p>
+       Start monitoring IPs to receive change alerts
+      </p>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- ===== 5. REPORTS ===== -->
+  <div class="section" id="section-reports">
+   <div class="page-header">
+    <h1 class="page-title">
+     📄 Report Generation
+    </h1>
+    <p class="page-subtitle">
+     Generate comprehensive PDF security assessment reports
+    </p>
+   </div>
+   <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       📝
+      </span>
+      Generate New Report
+     </div>
+    </div>
+    <div class="form-group">
+     <label class="form-label">
+      Select Scan ID
+     </label>
+     <select class="form-select" id="reportScanSelect">
+      <option value="">
+       Select a scan...
+      </option>
+     </select>
+    </div>
+    <div class="form-group">
+     <label class="form-label">
+      Report Title
+     </label>
+     <input class="form-input" id="reportTitle" type="text" value="ACDRIP+ Security Assessment Report"/>
+    </div>
+    <button class="btn btn-primary" onclick="generateReport()">
+     📄 Generate PDF Report
+    </button>
+    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+     📋 Reports include: Executive Summary, Risk Analysis, Open Ports &amp; Services, Vulnerability Details, Attack Simulation Data, Financial Risk Assessment, and AI Recommendations.
+    </p>
+   </div>
+   <!-- Existing Reports -->
+   <div class="card">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       📚
+      </span>
+      Report History
+     </div>
+     <button class="btn btn-ghost btn-sm" onclick="loadReports()">
+      &orarr; Refresh
+     </button>
+    </div>
+    <div class="report-list" id="reportsList">
+     <div class="empty-state">
+      <div class="icon">
+       📄
+      </div>
+      <h3>
+       No reports generated
+      </h3>
+      <p>
+       Run a scan first, then generate a PDF report
+      </p>
+     </div>
+    </div>
+   </div>
+  </div>
+  <!-- ===== 6. THREAT INTELLIGENCE ===== -->
+  <div class="section" id="section-threat-intel">
+   <div class="page-header">
+    <h1 class="page-title">
+     🌐 Global Threat Intelligence
+    </h1>
+    <p class="page-subtitle">
+     Real-time indicators of compromise, APT attribution, zero-day alerts, and IOC database &mdash; click any feed entry to expand
+    </p>
+   </div>
+   <!-- Live Ticker -->
+   <div style="background:linear-gradient(90deg,rgba(239,68,68,0.15),rgba(239,68,68,0.05));border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px">
+    <span style="background:var(--red);color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;flex-shrink:0">
+     ⚡ LIVE
+    </span>
+    <div id="threatTicker" style="font-size:13px;color:var(--text-primary);transition:opacity 0.4s">
+     Loading threat feed...
+    </div>
+   </div>
+   <div class="metrics-grid">
+    <div class="metric-card">
+     <div class="metric-label">
+      Global Threat Level
+     </div>
+     <div class="metric-value" style="color: var(--red);">
+      ELEVATED
+     </div>
+     <div class="metric-change up">
+      +14% Critical CVEs Weekly
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      Active Ransomware Campaigns
+     </div>
+     <div class="metric-value" style="color: var(--orange);">
+      12
+     </div>
+     <div class="metric-change">
+      Monitored globally
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      Recent Zero-Days
+     </div>
+     <div class="metric-value" style="color: var(--cyan);">
+      4
+     </div>
+     <div class="metric-change">
+      In past 72 hours
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      IOCs Tracked
+     </div>
+     <div class="metric-value" style="color: var(--purple);">
+      8,231
+     </div>
+     <div class="metric-change">
+      Updated 5 min ago
+     </div>
+    </div>
+   </div>
+   <!-- Live Threat Feed (populated by JS) -->
+   <div class="card" style="margin-top: 20px;">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🚨
+      </span>
+      Live Threat Intelligence Feed
+     </div>
+     <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--green);">
+      ● Live Sync Active
+     </span>
+    </div>
+    <div class="data-table">
+    </div>
+   </div>
+   <!-- IOC Table (populated by JS) -->
+   <div class="card" style="margin-top:20px">
+    <div class="card-header">
+     <div class="card-title">
+      <span class="icon">
+       🔎
+      </span>
+      Indicators of Compromise (IOC) Database
+     </div>
+     <span class="badge" style="background:rgba(0,229,255,0.15);color:var(--cyan)">
+      8 IOCs Loaded
+     </span>
+    </div>
+    <table class="data-table">
+     <thead>
+      <tr>
+       <th>
+        Type
+       </th>
+       <th>
+        Indicator
+       </th>
+       <th>
+        Threat
+       </th>
+       <th>
+        Confidence
+       </th>
+       <th>
+        Origin
+       </th>
+       <th>
+        TTL
+       </th>
+      </tr>
+     </thead>
+     <tbody id="iocTableBody">
+     </tbody>
+    </table>
+   </div>
+  </div>
+  <!-- ===== 7. MITRE ATT&CK Matrix ===== -->
+  <div class="section" id="section-mitre">
+   <div class="page-header">
+    <h1 class="page-title">
+     🛡️ MITRE ATT&amp;CK Analysis Dashboard
+    </h1>
+    <p class="page-subtitle">
+     Interactive full 11-tactic matrix &mdash; click any technique card to see AI analysis, detection count, and mitigation guidance
+    </p>
+   </div>
+   <!-- Detail Panel -->
+   <div class="card hidden" id="mitreDetailPanel" style="margin-bottom:20px;border:1px solid var(--cyan);padding:20px">
+   </div>
+   <!-- Stats Row -->
+   <div class="metrics-grid" style="margin-bottom:20px">
+    <div class="metric-card">
+     <div class="metric-label">
+      Tactics Covered
+     </div>
+     <div class="metric-value" style="color:var(--cyan)">
+      11
+     </div>
+     <div class="metric-change">
+      MITRE ATT&amp;CK Enterprise
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      Techniques Mapped
+     </div>
+     <div class="metric-value" style="color:var(--purple)">
+      33
+     </div>
+     <div class="metric-change">
+      Across all tactics
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      Active Detections
+     </div>
+     <div class="metric-value" style="color:var(--red)">
+      18
+     </div>
+     <div class="metric-change">
+      Detected in simulations
+     </div>
+    </div>
+    <div class="metric-card">
+     <div class="metric-label">
+      Coverage Score
+     </div>
+     <div class="metric-value" style="color:var(--green)">
+      73%
+     </div>
+     <div class="metric-change">
+      Of known techniques
+     </div>
+    </div>
+   </div>
+   <!-- Interactive Matrix -->
+   <div class="card" style="padding:20px;overflow-x:auto">
+    <div class="card-header" style="margin-bottom:16px">
+     <div class="card-title">
+      <span class="icon">
+       🔦
+      </span>
+      Interactive Technique Matrix
+      <span style="font-size:12px;color:var(--text-muted);font-weight:400">
+       &mdash; Click any card for AI analysis
+      </span>
+     </div>
+    </div>
+    <div id="mitreMatrixContainer" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding-bottom: 8px;">
+    </div>
+   </div>
+   <!-- Legacy static grid kept hidden; JS matrix replaces it -->
+   <div style="display:none">
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;">
+     <!-- Mapping Column 1 -->
+     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
+      <div style="font-weight: 700; color: var(--cyan); border-bottom: 2px solid var(--cyan); padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+       Initial Access
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1190
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Exploit Public-Facing App
+       </span>
+       <br/>
+       <span style="font-size:10px; color:var(--red);">
+        Detected in 12 simulations
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1078
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Valid Accounts
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1566
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Phishing
+       </span>
+      </div>
+     </div>
+     <!-- Mapping Column 2 -->
+     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
+      <div style="font-weight: 700; color: var(--purple); border-bottom: 2px solid var(--purple); padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+       Execution
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(249, 115, 22, 0.15); border: 1px solid var(--orange); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1059
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Command &amp; Scripting Interpreter
+       </span>
+       <br/>
+       <span style="font-size:10px; color:var(--orange);">
+        Common exploit pivot
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1203
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Client App Exec
+       </span>
+      </div>
+     </div>
+     <!-- Mapping Column 3 -->
+     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
+      <div style="font-weight: 700; color: var(--yellow); border-bottom: 2px solid var(--yellow); padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+       Persistence
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1547
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Boot/Logon AutoStart
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(245, 158, 11, 0.15); border: 1px solid var(--yellow); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1053
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Scheduled Tasks
+       </span>
+       <br/>
+       <span style="font-size:10px; color:var(--yellow);">
+        Vulnerable Linux Nodes
+       </span>
+      </div>
+     </div>
+     <!-- Mapping Column 4 -->
+     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
+      <div style="font-weight: 700; color: var(--green); border-bottom: 2px solid var(--green); padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+       Privilege Escalation
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1068
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Exploitation for ProvEsc
+       </span>
+       <br/>
+       <span style="font-size:10px; color:var(--red);">
+        Kernel Vuln Exposed
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1548
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Abuse Elevation
+       </span>
+      </div>
+     </div>
+     <!-- Mapping Column 5 -->
+     <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px;">
+      <div style="font-weight: 700; color: var(--blue); border-bottom: 2px solid var(--blue); padding-bottom: 8px; margin-bottom: 12px; text-align: center;">
+       Defensive Evasion
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1140
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Deobfuscate/Decode
+       </span>
+      </div>
+      <div style="font-size: 12px; padding: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-primary); border-radius: 4px; margin-bottom: 8px;">
+       <strong>
+        T1070
+       </strong>
+       <br/>
+       <span style="color:var(--text-secondary);">
+        Log Clearance
+       </span>
+      </div>
+     </div>
+    </div>
+   </div>
+   <!-- ===== 8. DARK WEB EXPOSURE ===== -->
+   <div class="section" id="section-darkweb">
+    <div class="section-container">
+     <div class="page-header">
+      <h1 class="page-title">
+       🕸️ Dark Web AI Hunter
+      </h1>
+      <p class="page-subtitle">
+       AI-powered tracking to map exposed corporate credentials, leaked data, and APT chatter
+      </p>
+     </div>
+     <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+       <div class="card-title">
+        <span class="icon">
+         🔍
+        </span>
+        Deep Search Engine
+       </div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+       <input class="form-input form-input-mono" id="darkwebTarget" placeholder="Enter Domain or IP to scan dark web markers" style="flex: 1;" type="text"/>
+       <button class="btn btn-primary" onclick="runDarkWebScan()">
+        猎 Scan Dark Nets
+       </button>
+      </div>
+     </div>
+     <div class="hidden" id="darkwebLoading">
+      <div class="loading-overlay">
+       <div class="spinner-lg">
+       </div>
+       <div>
+        Crawling TOR &amp; I2P networks
+        <span class="dots">
+        </span>
+       </div>
+      </div>
+     </div>
+     <div class="hidden" id="darkwebResults">
+      <div style="display:flex; flex-direction:column; gap:24px;">
+       <div style="width:100%;">
+        <div class="metrics-grid">
+         <div class="metric-card">
+          <div class="metric-label">
+           Exposed Assets
+          </div>
+          <div class="metric-value darkweb-value-1" style="color: var(--red);">
+           1,402
+          </div>
+          <div class="metric-change up">
+           +42 this week
+          </div>
+         </div>
+         <div class="metric-card">
+          <div class="metric-label">
+           Leaked Credentials
+          </div>
+          <div class="metric-value darkweb-value-2" style="color: var(--orange);">
+           341
+          </div>
+          <div class="metric-change">
+           From 3 breaches
+          </div>
+         </div>
+         <div class="metric-card">
+          <div class="metric-label">
+           APT Mentions
+          </div>
+          <div class="metric-value darkweb-value-3" style="color: var(--purple);">
+           12
+          </div>
+          <div class="metric-change">
+           In ransomware forums
+          </div>
+         </div>
+        </div>
+       </div>
+       <div style="display:flex; flex-wrap:wrap; gap:24px; width:100%;">
+        <div style="flex: 1 1 300px;">
+         <div class="card card-full">
+          <div class="card-header">
+           <div class="card-title">
+            <span class="icon">
+             📊
+            </span>
+            Timeline (6mo)
+           </div>
+          </div>
+          <div id="breachTimeline" style="padding:12px 0;">
+          </div>
+         </div>
+        </div>
+        <div style="flex: 2 1 500px;">
+         <div class="card card-full">
+          <div class="card-header">
+           <div class="card-title">
+            <span class="icon">
+             📜
+            </span>
+            Recent Detections
+           </div>
+          </div>
+          <div class="data-table darkweb-live-feed">
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+   <!-- ===== 9. QUANTUM THREAT ASSESSMENT ===== -->
+   <div class="section" id="section-quantum">
+    <div class="section-container">
+     <div class="page-header">
+      <h1 class="page-title">
+       ⚛️ Post-Quantum Cryptography Assessment
+      </h1>
+      <p class="page-subtitle">
+       Evaluate your cryptographic infrastructure against future quantum computer attacks (Q-Day)
+      </p>
+     </div>
+     <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+       <div class="card-title">
+        <span class="icon">
+         ⚛️
+        </span>
+        Analyze Cryptographic Agility
+       </div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+       <input class="form-input form-input-mono" id="quantumIP" placeholder="Enter IP or Web Domain" style="flex: 1;" type="text"/>
+       <button class="btn btn-primary" onclick="runQuantumScan()">
+        Analyze Crypto Systems
+       </button>
+      </div>
+     </div>
+     <div class="hidden" id="quantumLoading">
+      <div class="loading-overlay">
+       <div class="spinner-lg">
+       </div>
+       <div>
+        Analyzing TLS Handshakes &amp; Cipher Suites
+        <span class="dots">
+        </span>
+       </div>
+      </div>
+     </div>
+     <div class="hidden" id="quantumResults">
+      <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:start; width:100%;">
+       <div style="flex: 1 1 300px;">
+        <div class="card card-full" style="text-align:center;">
+         <div class="card-header">
+          <div class="card-title">
+           Quantum Readiness
+          </div>
+         </div>
+         <div style="padding:20px 0;">
+          <canvas height="100" id="quantumGauge" style="display:block;margin:0 auto" width="180">
+          </canvas>
+          <div id="quantumReadinessScore" style="font-size:32px;font-weight:800;margin-top:10px;color:var(--cyan);">
+           --%
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">
+           NIST PQC Score
+          </div>
+         </div>
+        </div>
+       </div>
+       <div style="flex: 2 1 500px;">
+        <div class="metrics-grid">
+         <div class="metric-card">
+          <div class="metric-label">
+           Vulnerable Systems
+          </div>
+          <div class="metric-value" style="color:var(--red)">
+           6 / 8
+          </div>
+          <div class="metric-change">
+           Shor's Risk
+          </div>
+         </div>
+         <div class="metric-card">
+          <div class="metric-label">
+           PQC Algorithms
+          </div>
+          <div class="metric-value" style="color:var(--orange)">
+           0 / 4
+          </div>
+          <div class="metric-change">
+           Deployed
+          </div>
+         </div>
+         <div class="metric-card">
+          <div class="metric-label">
+           Q-Day Horizon
+          </div>
+          <div class="metric-value" style="color:var(--cyan)">
+           5-10 Yrs
+          </div>
+          <div class="metric-change">
+           Consensus
+          </div>
+         </div>
+         <div class="metric-card">
+          <div class="metric-label">
+           HNDL Exposure
+          </div>
+          <div class="metric-value" style="color:var(--yellow)">
+           HIGH
+          </div>
+          <div class="metric-change">
+           Harvest Later
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="metrics-grid">
+      <div class="metric-card">
+       <div class="metric-label">
+        Quantum Vulnerable Systems
+       </div>
+       <div class="metric-value" style="color:var(--red)">
+        6 / 8
+       </div>
+       <div class="metric-change">
+        Shor's Algorithm Risk
+       </div>
+      </div>
+      <div class="metric-card">
+       <div class="metric-label">
+        PQC Algorithms (NIST)
+       </div>
+       <div class="metric-value" style="color:var(--orange)">
+        0 / 4
+       </div>
+       <div class="metric-change">
+        Deployed so far
+       </div>
+      </div>
+      <div class="metric-card">
+       <div class="metric-label">
+        Estimated Q-Day Horizon
+       </div>
+       <div class="metric-value" style="color:var(--cyan)">
+        5-10 Yrs
+       </div>
+       <div class="metric-change">
+        Industry consensus
+       </div>
+      </div>
+      <div class="metric-card">
+       <div class="metric-label">
+        HNDL Exposure Window
+       </div>
+       <div class="metric-value" style="color:var(--yellow)">
+        HIGH
+       </div>
+       <div class="metric-change">
+        Harvest Now, Decrypt Later
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Crypto Table -->
+    <div class="card" style="margin-bottom:20px">
+     <div class="card-header">
+      <div class="card-title">
+       <span class="icon">
+        🔐
+       </span>
+       Cryptographic Inventory &amp; Quantum Risk
+      </div>
+     </div>
+     <table class="data-table">
+      <thead>
+       <tr>
+        <th>
+         System
+        </th>
+        <th>
+         Current Algorithm
+        </th>
+        <th>
+         Quantum Risk
+        </th>
+        <th>
+         Recommended PQC Replacement
+        </th>
+       </tr>
+      </thead>
+      <tbody id="quantumDataTable">
+      </tbody>
+     </table>
+    </div>
+    <!-- Migration Roadmap -->
+    <div class="card">
+     <div class="card-header">
+      <div class="card-title">
+       <span class="icon">
+        🗺️
+       </span>
+       PQC Migration Roadmap
+      </div>
+      <span class="badge" style="background:rgba(16,185,129,0.2);color:var(--green)">
+       Phase 1 Complete
+      </span>
+     </div>
+     <div id="quantumRoadmap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="/static/js/app.js?v=1.0.1">
+  </script>
+ </body>
+</html>
