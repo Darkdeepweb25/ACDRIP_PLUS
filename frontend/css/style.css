@@ -1766,39 +1766,39 @@ a:hover {
     margin-left: 8px;
     font-size: 0.9em;
 }
-/* ── Layout Helpers ────────────────────────────────────────── */
-.section-container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.dashboard-layout {
+/* ── Modern Dashboard Grid System ───────────────────────────── */
+.dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(12, 1fr);
     gap: 24px;
     margin-bottom: 24px;
 }
 
+.col-12 { grid-column: span 12; }
+.col-8 { grid-column: span 8; }
+.col-7 { grid-column: span 7; }
+.col-6 { grid-column: span 6; }
+.col-5 { grid-column: span 5; }
+.col-4 { grid-column: span 4; }
+.col-3 { grid-column: span 3; }
+
 @media (max-width: 1200px) {
-    .dashboard-layout {
-        grid-template-columns: 1fr;
+    .col-8, .col-7, .col-6, .col-5, .col-4, .col-3 {
+        grid-column: span 12;
     }
 }
 
-.chart-container-sq {
-    position: relative;
-    height: 300px;
-    width: 100%;
+.section-container {
+    max-width: 1440px;
+    margin: 0 auto;
 }
 
-.metrics-row {
+.card-full {
+    height: 100%;
+}
+
+.flex-center {
     display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 24px;
-}
-
-.flex-grow {
-    flex: 1;
-    min-width: 300px;
+    align-items: center;
+    justify-content: center;
 }

@@ -698,7 +698,7 @@
                 </div>
             </div>
 
-            <div id="darkweLoading" class="hidden">
+            <div id="darkwebLoading" class="hidden">
                  <div class="loading-overlay">
                     <div class="spinner-lg"></div>
                     <div>Crawling TOR & I2P networks<span class="dots"></span></div>
@@ -706,33 +706,44 @@
             </div>
 
             <div id="darkwebResults" class="hidden">
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-label">Exposed Assets</div>
-                        <div class="metric-value darkweb-value-1" style="color: var(--red);">1,402</div>
-                        <div class="metric-change up">+42 this week</div>
+                <div class="dashboard-grid">
+                    <div class="col-12">
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">Exposed Assets</div>
+                                <div class="metric-value darkweb-value-1" style="color: var(--red);">1,402</div>
+                                <div class="metric-change up">+42 this week</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Leaked Credentials</div>
+                                <div class="metric-value darkweb-value-2" style="color: var(--orange);">341</div>
+                                <div class="metric-change">From 3 breaches</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">APT Mentions</div>
+                                <div class="metric-value darkweb-value-3" style="color: var(--purple);">12</div>
+                                <div class="metric-change">In ransomware forums</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">Leaked Credentials</div>
-                        <div class="metric-value darkweb-value-2" style="color: var(--orange);">341</div>
-                        <div class="metric-change">From 3 breaches</div>
+
+                    <div class="col-4">
+                        <div class="card card-full">
+                            <div class="card-header">
+                                <div class="card-title"><span class="icon">📊</span> Timeline (6mo)</div>
+                            </div>
+                            <div id="breachTimeline" style="padding:12px 0;"></div>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-label">APT Mentions</div>
-                        <div class="metric-value darkweb-value-3" style="color: var(--purple);">12</div>
-                        <div class="metric-change">In ransomware forums</div>
+
+                    <div class="col-8">
+                        <div class="card card-full">
+                            <div class="card-header">
+                                <div class="card-title"><span class="icon">📜</span> Recent Detections</div>
+                            </div>
+                            <div class="data-table darkweb-live-feed"></div>
+                        </div>
                     </div>
-                </div>
-                <!-- Breach Activity Timeline -->
-                <div class="card" style="margin-top:20px">
-                    <div class="card-header">
-                        <div class="card-title"><span class="icon">📊</span> Breach Activity Timeline (6 months)</div>
-                    </div>
-                    <div id="breachTimeline" style="padding:12px 8px"></div>
-                </div>
-                <div class="card" style="margin-top: 20px;">
-                    <div class="card-title" style="margin-bottom: 16px;"><span class="icon">📜</span> Recent Dark Web Detections</div>
-                    <div class="data-table darkweb-live-feed"></div>
                 </div>
             </div>
             </div>
@@ -763,14 +774,43 @@
             </div>
 
             <div id="quantumResults" class="hidden">
-                 <div class="dashboard-layout">
-                     <!-- Gauge -->
-                     <div class="card" style="text-align:center;padding:20px">
-                         <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Quantum Readiness Score</div>
-                         <canvas id="quantumGauge" width="180" height="100" style="display:block;margin:0 auto"></canvas>
-                         <div id="quantumReadinessScore" style="font-size:28px;font-weight:700;margin-top:4px">25%</div>
-                         <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Cryptographic Agility Rating</div>
+                 <div class="dashboard-grid">
+                     <div class="col-4">
+                         <div class="card card-full" style="text-align:center;">
+                             <div class="card-header"><div class="card-title">Quantum Readiness</div></div>
+                             <div style="padding:20px 0;">
+                                 <canvas id="quantumGauge" width="180" height="100" style="display:block;margin:0 auto"></canvas>
+                                 <div id="quantumReadinessScore" style="font-size:32px;font-weight:800;margin-top:10px;color:var(--cyan);">--%</div>
+                                 <div style="font-size:12px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">NIST PQC Score</div>
+                             </div>
+                         </div>
                      </div>
+                     <div class="col-8">
+                         <div class="metrics-grid">
+                             <div class="metric-card">
+                                 <div class="metric-label">Vulnerable Systems</div>
+                                 <div class="metric-value" style="color:var(--red)">6 / 8</div>
+                                 <div class="metric-change">Shor's Risk</div>
+                             </div>
+                             <div class="metric-card">
+                                 <div class="metric-label">PQC Algorithms</div>
+                                 <div class="metric-value" style="color:var(--orange)">0 / 4</div>
+                                 <div class="metric-change">Deployed</div>
+                             </div>
+                             <div class="metric-card">
+                                 <div class="metric-label">Q-Day Horizon</div>
+                                 <div class="metric-value" style="color:var(--cyan)">5-10 Yrs</div>
+                                 <div class="metric-change">Consensus</div>
+                             </div>
+                             <div class="metric-card">
+                                 <div class="metric-label">HNDL Exposure</div>
+                                 <div class="metric-value" style="color:var(--yellow)">HIGH</div>
+                                 <div class="metric-change">Harvest Later</div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+</div>
                      <div class="metrics-grid">
                          <div class="metric-card">
                              <div class="metric-label">Quantum Vulnerable Systems</div>
