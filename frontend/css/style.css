@@ -1766,3 +1766,39 @@ a:hover {
     margin-left: 8px;
     font-size: 0.9em;
 }
+/* ── Layout Helpers ────────────────────────────────────────── */
+.section-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.chart-container-sq {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.metrics-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.flex-grow {
+    flex: 1;
+    min-width: 300px;
+}
