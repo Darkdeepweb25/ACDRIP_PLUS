@@ -280,7 +280,6 @@
                 </div>
             </div>
             </div>
-        </div>
 
         <!-- ===== 2. RISK PREDICTION ===== -->
         <div class="section" id="section-risk">
@@ -368,7 +367,6 @@
                 </div>
             </div>
             </div>
-        </div>
 
         <!-- ===== 3. ATTACK SIMULATION ===== -->
         <div class="section" id="section-simulation">
@@ -462,7 +460,6 @@
                 </div>
             </div>
             </div>
-        </div>
 
         <!-- ===== 5. REPORTS ===== -->
         <div class="section" id="section-reports">
@@ -508,7 +505,6 @@
                 </div>
             </div>
             </div>
-        </div>
 
         <!-- ===== 6. THREAT INTELLIGENCE ===== -->
         <div class="section" id="section-threat-intel">
@@ -608,7 +604,7 @@
                 <div class="card-header" style="margin-bottom:16px">
                     <div class="card-title"><span class="icon">🔦</span> Interactive Technique Matrix <span style="font-size:12px;color:var(--text-muted);font-weight:400">— Click any card for AI analysis</span></div>
                 </div>
-                <div id="mitreMatrixContainer" style="display:flex;gap:10px;min-width:max-content;padding-bottom:8px"></div>
+                <div id="mitreMatrixContainer" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding-bottom: 8px;"></div>
             </div>
 
             <!-- Legacy static grid kept hidden; JS matrix replaces it -->
@@ -705,8 +701,8 @@
             </div>
 
             <div id="darkwebResults" class="hidden">
-                <div class="dashboard-grid">
-                    <div class="col-12">
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <div style="width:100%;">
                         <div class="metrics-grid">
                             <div class="metric-card">
                                 <div class="metric-label">Exposed Assets</div>
@@ -726,7 +722,8 @@
                         </div>
                     </div>
 
-                    <div class="col-4">
+                    <div style="display:flex; flex-wrap:wrap; gap:24px; width:100%;">
+                    <div style="flex: 1 1 300px;">
                         <div class="card card-full">
                             <div class="card-header">
                                 <div class="card-title"><span class="icon">📊</span> Timeline (6mo)</div>
@@ -735,13 +732,14 @@
                         </div>
                     </div>
 
-                    <div class="col-8">
+                    <div style="flex: 2 1 500px;">
                         <div class="card card-full">
                             <div class="card-header">
                                 <div class="card-title"><span class="icon">📜</span> Recent Detections</div>
                             </div>
                             <div class="data-table darkweb-live-feed"></div>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -773,8 +771,8 @@
             </div>
 
             <div id="quantumResults" class="hidden">
-                 <div class="dashboard-grid">
-                     <div class="col-4">
+                 <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:start; width:100%;">
+                     <div style="flex: 1 1 300px;">
                          <div class="card card-full" style="text-align:center;">
                              <div class="card-header"><div class="card-title">Quantum Readiness</div></div>
                              <div style="padding:20px 0;">
@@ -784,7 +782,7 @@
                              </div>
                          </div>
                      </div>
-                     <div class="col-8">
+                     <div style="flex: 2 1 500px;">
                          <div class="metrics-grid">
                              <div class="metric-card">
                                  <div class="metric-label">Vulnerable Systems</div>
@@ -855,7 +853,6 @@
                 </div>
             </div>
             </div>
-        </div>
 
     </main>
 </div>
