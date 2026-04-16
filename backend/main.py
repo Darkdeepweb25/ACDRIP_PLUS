@@ -111,10 +111,14 @@ def health_check():
 
 @app.get("/")
 def serve_frontend():
-    """Serve the main frontend application."""
+    """Serve the main frontend application completely bypassing cache."""
     index_path = os.path.join(frontend_dir, "index.html")
     if os.path.exists(index_path):
-        return FileResponse(index_path)
+        response = FileResponse(index_path)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     return JSONResponse({"message": "ACDRIP+ API is running. Frontend not found."})
 
 
