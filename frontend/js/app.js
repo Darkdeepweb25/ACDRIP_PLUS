@@ -2162,42 +2162,7 @@ function renderQuantumData() {
     `;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// Make Simulation "Interesting" - Animation
-// ═══════════════════════════════════════════════════════════════
 
-const origDisplaySimulationResults = displaySimulationResults;
-displaySimulationResults = function(data) {
-    origDisplaySimulationResults(data);
-    
-    // Add interactive animation classes to timeline items
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    timelineItems.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateX(-20px)';
-        item.style.transition = 'all 0.4s ease-out';
-        setTimeout(() => {
-            item.style.opacity = '1';
-            item.style.transform = 'translateX(0)';
-            
-            // Blink effect when it appears
-            const tag = document.createElement('span');
-            tag.innerText = ' [EXECUTING AI...]';
-            tag.style.color = 'var(--cyan)';
-            tag.className = 'blinking-exec';
-            item.querySelector('.timeline-title').appendChild(tag);
-            
-            setTimeout(() => {
-                tag.remove();
-                const doneTag = document.createElement('span');
-                doneTag.innerText = ' [COMPLETED]';
-                doneTag.style.color = 'var(--green)';
-                item.querySelector('.timeline-title').appendChild(doneTag);
-            }, 800);
-            
-        }, index * 1200 + 500);
-    });
-}
 
 // ═══════════════════════════════════════════════════════════════
 // Make Threat Intel & MITRE Interactive
