@@ -1788,10 +1788,10 @@ function runDarkWebScan() {
         return;
     }
     document.getElementById('darkwebLoading').classList.remove('hidden');
-    document.getElementById('darkwebResults').classList.add('hidden');
+    document.getElementById('darkwebResults').style.opacity = '0.3';
     setTimeout(() => {
         document.getElementById('darkwebLoading').classList.add('hidden');
-        document.getElementById('darkwebResults').classList.remove('hidden');
+        document.getElementById('darkwebResults').style.opacity = '1';
         renderDarkWebData(target);
         showToast('Dark Web Scan Completed!', 'success');
     }, 2500);
@@ -1876,10 +1876,10 @@ function runQuantumScan() {
         return;
     }
     document.getElementById('quantumLoading').classList.remove('hidden');
-    document.getElementById('quantumResults').classList.add('hidden');
+    document.getElementById('quantumResults').style.opacity = '0.3';
     setTimeout(() => {
         document.getElementById('quantumLoading').classList.add('hidden');
-        document.getElementById('quantumResults').classList.remove('hidden');
+        document.getElementById('quantumResults').style.opacity = '1';
         renderQuantumData(target);
         showToast('Quantum Cryptographic Analysis Completed!', 'success');
     }, 3000);
