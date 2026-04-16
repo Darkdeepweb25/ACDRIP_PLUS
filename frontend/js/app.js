@@ -2086,275 +2086,58 @@ setInterval(() => {
     }
 }, 2000);
 
+// ═══════════════════════════════════════════════════════════════
+// FINAL SECTION WRAPPER & AUTO-INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
 
-function renderDarkWebData(target) {
-    const liveFeed = document.querySelector('.darkweb-live-feed');
-    liveFeed.innerHTML = `
-        <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 16px;">
-            <div style="font-size: 20px;">🕵️</div>
-            <div>
-                <strong>Exfiltrated Data Set Found</strong>
-                <div style="font-size: 13px; color: var(--text-secondary);">Found a matching dataset on BreachForums containing internal employee emails for ${target}.</div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Detected: 2 hours ago</div>
-            </div>
-        </div>
-        <div style="padding: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 16px;">
-            <div style="font-size: 20px;">🔑</div>
-            <div>
-                <strong>VPN Credentials Leaked</strong>
-                <div style="font-size: 13px; color: var(--text-secondary);">Found 4 plaintext credentials in Russian telegram channel associated with access brokers targeting ${target}.</div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Detected: 14 hours ago</div>
-            </div>
-        </div>
-        <div style="padding: 12px; display: flex; align-items: flex-start; gap: 16px;">
-            <div style="font-size: 20px;">💬</div>
-            <div>
-                <strong>Ransomware Syndicate Chatter</strong>
-                <div style="font-size: 13px; color: var(--text-secondary);">LockBit affiliate discussed potential ingress via exposed SSH port on ${target}'s IP range.</div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Detected: 3 days ago</div>
-            </div>
-        </div>
-    `;
+// Override switchSection one final time to handle all new modules
+const _finalSwitchSection = switchSection;
+switchSection = function(section) {
+    _finalSwitchSection(section);
     
-    // Animate stats
-    animateCounterTo('.darkweb-value-1', 1402);
-    animateCounterTo('.darkweb-value-2', 341);
-    animateCounterTo('.darkweb-value-3', 12);
-}
-
-function animateCounterTo(selector, val) {
-    const el = document.querySelector(selector);
-    if(!el) return;
-    let curr = 0;
-    const interval = setInterval(() => {
-        curr += Math.ceil(val / 20);
-        if (curr >= val) {
-            curr = val;
-            clearInterval(interval);
-        }
-        el.innerText = curr.toLocaleString();
-    }, 40);
-}
-
-function runQuantumScan() {
-    const target = document.getElementById('quantumIP').value.trim();
-    if (!target) {
-        showToast('Please enter a target domain or IP', 'error');
-        return;
-    }
-    document.getElementById('quantumLoading').classList.remove('hidden');
-    document.getElementById('quantumResults').classList.add('hidden');
-    setTimeout(() => {
-        document.getElementById('quantumLoading').classList.add('hidden');
-        document.getElementById('quantumResults').classList.remove('hidden');
-        renderQuantumData();
-        showToast('Quantum Cryptographic Analysis Completed!', 'success');
-    }, 3000);
-}
-
-function renderQuantumData() {
-    const tbody = document.getElementById('quantumDataTable');
-    tbody.innerHTML = `
-        <tr><td>Web Server TLS</td><td class="font-mono">RSA-2048 / SHA-256</td><td><span class="severity-badge severity-critical">Vulnerable</span></td><td class="font-mono" style="color:var(--green)">Dilithium2 / Kyber512</td></tr>
-        <tr><td>Database Connect</td><td class="font-mono">ECDHE-RSA-AES256</td><td><span class="severity-badge severity-high">Vulnerable</span></td><td class="font-mono" style="color:var(--green)">Kyber768</td></tr>
-        <tr><td>Code Signing</td><td class="font-mono">ECDSA P-384</td><td><span class="severity-badge severity-high">Vulnerable</span></td><td class="font-mono" style="color:var(--green)">Falcon-512</td></tr>
-        <tr><td>VPN Tunnel (IPSec)</td><td class="font-mono">IKEv2 (Diffie-Hellman)</td><td><span class="severity-badge severity-critical">Vulnerable</span></td><td class="font-mono" style="color:var(--green)">Classic McEliece</td></tr>
-    `;
-}
-
-
-
-// ═══════════════════════════════════════════════════════════════
-// Make Threat Intel & MITRE Interactive
-// ═══════════════════════════════════════════════════════════════
-
-setInterval(() => {
-    if(state.currentSection === 'threat-intel') {
-        const blips = document.querySelectorAll('.metric-change');
-        blips.forEach(b => {
-             b.style.opacity = '0.3';
-             setTimeout(() => b.style.opacity = '1', 300);
-        });
-        
-        // Randomly shuffle the order of the threat feed to look like it's live updating
-        const feedContainer = document.querySelector('#section-threat-intel .data-table');
-        if(feedContainer && Math.random() > 0.7) {
-            const items = Array.from(feedContainer.children);
-            if(items.length > 2) {
-                const first = items[0];
-                const last = items[items.length - 1];
-                feedContainer.insertBefore(last, first);
-                
-                // Flash background
-                last.style.background = 'rgba(0, 229, 255, 0.1)';
-                setTimeout(() => last.style.background = 'transparent', 1500);
-            }
+    // Auto-fill and Auto-init logic for specialized modules
+    if (section === 'darkweb') {
+        const targetInput = document.getElementById('darkwebTarget');
+        if (state.lastScannedIP && (!targetInput.value || targetInput.value === '')) {
+            targetInput.value = state.lastScannedIP;
+            runDarkWebScan(); // Automatically show data if we have a target
         }
     }
     
-    if(state.currentSection === 'mitre') {
-        const tags = document.querySelectorAll('#section-mitre .severity-badge, #section-mitre strong');
-        if(tags.length > 0 && Math.random() > 0.5) {
-            const t = tags[Math.floor(Math.random() * tags.length)];
-            const origColor = t.style.color;
-            t.style.color = 'white';
-            t.style.textShadow = '0 0 8px var(--cyan)';
+    if (section === 'quantum') {
+        const targetInput = document.getElementById('quantumIP');
+        if (state.lastScannedIP && (!targetInput.value || targetInput.value === '')) {
+            targetInput.value = state.lastScannedIP;
+            runQuantumScan(); // Automatically show data if we have a target
+        } else if (document.getElementById('quantumResults').classList.contains('hidden')) {
+            // If just opening for the first time without a target, show empty gauge
             setTimeout(() => {
-                 t.style.color = origColor;
-                 t.style.textShadow = 'none';
-            }, 600);
+                const canvas = document.getElementById('quantumGauge');
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 10;
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+                    ctx.lineWidth = 14;
+                    ctx.stroke();
+                }
+            }, 100);
         }
     }
-}, 2000);
+};
 
-
-// ═══════════════════════════════════════════════════════════════
-// DARK WEB EXPOSURE LOGIC
-// ═══════════════════════════════════════════════════════════════
-let dwChartInstance = null;
-
-function initDarkWeb() {
-    const input = document.getElementById('dwInput').value.trim();
-    if(!input) {
-        showToast('Please enter a domain or IP address', 'error');
-        return;
+// Ensure all metrics pulse occasionally
+setInterval(() => {
+    if (state.currentSection === 'darkweb') {
+        const values = document.querySelectorAll('.darkweb-value-1, .darkweb-value-2, .darkweb-value-3');
+        if (values.length > 0) {
+            const v = values[Math.floor(Math.random() * values.length)];
+            v.style.filter = 'brightness(1.5) drop-shadow(0 0 5px var(--cyan))';
+            setTimeout(() => v.style.filter = '', 500);
+        }
     }
-    
-    document.getElementById('dwResults').classList.remove('hidden');
-    
-    // Deterministic simulation based on string length
-    const score = input.length * 7;
-    const mentions = (score % 42) + 5;
-    const creds = (score % 115) * 3;
-    const chatter = (score % 8);
-    
-    animateValue(document.getElementById('dwMentions'), 0, mentions, 1000);
-    animateValue(document.getElementById('dwCreds'), 0, creds, 1500);
-    animateValue(document.getElementById('dwChatter'), 0, chatter, 800);
-    
-    renderDwChart();
-    renderDwFeed(input);
-}
+}, 3000);
 
-function renderDwChart() {
-    const ctx = document.getElementById('dwChart').getContext('2d');
-    if(dwChartInstance) dwChartInstance.destroy();
-    
-    const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const data = Array.from({length:6}, () => Math.floor(Math.random() * 50) + 10);
-    
-    dwChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Breach Indicators',
-                data: data,
-                borderColor: '#8b5cf6',
-                backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks:{color:'#64748b'} },
-                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks:{color:'#64748b'} }
-            },
-            plugins: { legend: { display: false } }
-        }
-    });
-}
-
-function renderDwFeed(target) {
-    const feed = document.getElementById('dwFeed');
-    feed.innerHTML = `
-        <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <strong style="color:var(--red);">[BreachForums]</strong> Mention of database dump potentially related to ${target}.
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">2 days ago</div>
-        </div>
-        <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <strong style="color:var(--orange);">[Telegram]</strong> Credential combo-list containing ${target} references shared in private group.
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">1 week ago</div>
-        </div>
-        <div style="padding:15px;">
-            <strong style="color:var(--purple);">[TOR Exit Node]</strong> Traffic matching ${target} detected exiting via known bad actor infrastructure.
-            <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">3 weeks ago</div>
-        </div>
-    `;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// QUANTUM THREAT INTEL LOGIC
-// ═══════════════════════════════════════════════════════════════
-function initQuantum() {
-    const table = document.getElementById('qAuditTable');
-    table.innerHTML = `
-        <tr><td>Web TLS Endpoints</td><td class="font-mono">RSA-2048</td><td><span class="severity-badge severity-critical">Vulnerable (Shor's)</span></td><td class="font-mono" style="color:var(--green)">CRYSTALS-Kyber</td></tr>
-        <tr><td>Database Connect</td><td class="font-mono">AES-128-GCM</td><td><span class="severity-badge severity-medium">Medium (Grover's)</span></td><td class="font-mono" style="color:var(--green)">AES-256 (Upgrade keys)</td></tr>
-        <tr><td>Auth JWT Signing</td><td class="font-mono">RS256</td><td><span class="severity-badge severity-critical">Vulnerable (Shor's)</span></td><td class="font-mono" style="color:var(--green)">CRYSTALS-Dilithium</td></tr>
-        <tr><td>SSH Host Keys</td><td class="font-mono">ECDSA (nistp256)</td><td><span class="severity-badge severity-critical">Vulnerable (Shor's)</span></td><td class="font-mono" style="color:var(--green)">SPHINCS+</td></tr>
-        <tr><td>Internal VPN</td><td class="font-mono">Diffie-Hellman</td><td><span class="severity-badge severity-high">Vulnerable (Shor's)</span></td><td class="font-mono" style="color:var(--green)">BIKE or HQC</td></tr>
-        <tr><td>Cold Storage Data</td><td class="font-mono">AES-256</td><td><span class="severity-badge severity-safe" style="color:var(--green)">Quantum Resistant</span></td><td class="font-mono" style="color:var(--green)">No Change Required</td></tr>
-    `;
-    
-    // Animate canvas score
-    const targetScore = 25; // 25% ready
-    let currentScore = 0;
-    
-    const intv = setInterval(() => {
-        currentScore++;
-        renderQuantumGauge(currentScore);
-        document.getElementById('qScoreText').innerText = currentScore + '%';
-        if(currentScore >= targetScore) clearInterval(intv);
-    }, 20);
-}
-
-function renderQuantumGauge(score) {
-    const canvas = document.getElementById('quantumCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const cx = canvas.width / 2;
-    const cy = canvas.height - 10;
-    const radius = 100;
-    
-    // Draw background arc
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, Math.PI, 0, false);
-    ctx.lineWidth = 20;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.stroke();
-    
-    // Draw color arc
-    const endAngle = Math.PI + (Math.PI * (score / 100));
-    
-    // Gradient
-    const gradient = ctx.createLinearGradient(0, cy, canvas.width, cy);
-    gradient.addColorStop(0, '#ef4444');  // Red
-    gradient.addColorStop(0.5, '#f59e0b'); // Amber
-    gradient.addColorStop(1, '#10b981');   // Green
-    
-    ctx.beginPath();
-    ctx.arc(cx, cy, radius, Math.PI, endAngle, false);
-    ctx.lineWidth = 20;
-    ctx.strokeStyle = gradient;
-    ctx.stroke();
-}
-
-// Ensure switchSection handles these if necessary by overriding it if it hasn't been already
-if (typeof _origSwitchSection_v2 === 'undefined') {
-    const _origSwitchSection_v2 = switchSection;
-    switchSection = function(section) {
-        _origSwitchSection_v2(section);
-        // Add any auto-loading logic here if required
-        if (section === 'quantum' && document.getElementById('qScoreText').innerText === '--%') {
-            renderQuantumGauge(0);
-        }
-    };
-}
+console.log("ACDRIP+ Modules Fully Synchronized.");
