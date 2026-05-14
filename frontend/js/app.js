@@ -140,8 +140,9 @@ async function api(endpoint, options = {}) {
         const data = await response.json();
 
         if (!response.ok) {
-            // Auto logout on 401 Unauthorized (expired token)
-            if (response.status === 401) {
+            // Auto logout on 401 ONLY for authenticated endpoints (not login/register)
+            const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/register');
+            if (response.status === 401 && !isAuthEndpoint) {
                 console.warn('Session expired or invalid token. Logging out...');
                 handleLogout();
             }
