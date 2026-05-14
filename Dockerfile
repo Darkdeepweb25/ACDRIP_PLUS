@@ -29,5 +29,5 @@ ENV PORT=8000
 ENV DEBUG=false
 ENV DATABASE_URL=sqlite:///./acdrip_plus.db
 
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application using the dynamic PORT environment variable
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
