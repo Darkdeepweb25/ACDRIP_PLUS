@@ -27,6 +27,8 @@ from risk_engine.routes import router as risk_router
 from simulation.routes import router as simulation_router
 from monitoring.routes import router as monitoring_router
 from reports.routes import router as reports_router
+from darkweb.routes import router as darkweb_router
+from quantum.routes import router as quantum_router
 
 
 @asynccontextmanager
@@ -88,6 +90,8 @@ app.include_router(risk_router)
 app.include_router(simulation_router)
 app.include_router(monitoring_router)
 app.include_router(reports_router)
+app.include_router(darkweb_router)
+app.include_router(quantum_router)
 
 # ── Serve Frontend Static Files ──────────────────────────────
 

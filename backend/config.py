@@ -27,7 +27,7 @@ class Settings:
     # JWT Authentication
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "acdrip-plus-super-secret-key-change-in-production-2026")
     JWT_ALGORITHM = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 1440))  # 24 hours
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", 525600))  # 1 year
 
     # Rate Limiting
     RATE_LIMIT = os.getenv("RATE_LIMIT", "60/minute")

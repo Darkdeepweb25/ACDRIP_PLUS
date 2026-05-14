@@ -46,12 +46,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
 def decode_token(token: str) -> dict:
     """Decode and validate a JWT token."""
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        # Added 60 seconds leeway for clock skew
+        payload = jwt.decode(
+            token, 
+            settings.JWT_SECRET_KEY, 
+            algorithms=[settings.JWT_ALGORITHM],
+            options={"leeway": 60}
+        )
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"[AUTH ERROR] Token validation failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token",
+            detail=f"Invalid or expired token: {str(e)}" if settings.DEBUG else "Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
 

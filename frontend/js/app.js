@@ -140,6 +140,11 @@ async function api(endpoint, options = {}) {
         const data = await response.json();
 
         if (!response.ok) {
+            // Auto logout on 401 Unauthorized (expired token)
+            if (response.status === 401) {
+                console.warn('Session expired or invalid token. Logging out...');
+                handleLogout();
+            }
             throw new Error(data.detail || `Request failed (${response.status})`);
         }
 
@@ -318,6 +323,14 @@ function switchSection(section) {
             }
             runSimulation();
         }
+    } else if (section === 'threat-intel') {
+        initThreatIntel();
+    } else if (section === 'mitre') {
+        renderMITREMatrix();
+    } else if (section === 'darkweb') {
+        initDarkwebSection();
+    } else if (section === 'quantum') {
+        initQuantumSection();
     }
 }
 
@@ -1781,87 +1794,118 @@ function getMitigation(id) {
 // DARK WEB EXPOSURE — Advanced Per-Target Analysis
 // ═══════════════════════════════════════════════════════════════
 
-function runDarkWebScan() {
+async function runDarkWebScan() {
     const target = document.getElementById('darkwebTarget').value.trim();
     if (!target) {
         showToast('Please enter a target domain or IP', 'error');
         return;
     }
     document.getElementById('darkwebLoading').classList.remove('hidden');
-    document.getElementById('darkwebResults').style.opacity = '0.3';
-    setTimeout(() => {
+    document.getElementById('darkwebResults').classList.add('hidden');
+    try {
+        const data = await api('/api/darkweb/scan', {
+            method: 'POST',
+            body: JSON.stringify({ target: target })
+        });
         document.getElementById('darkwebLoading').classList.add('hidden');
+        document.getElementById('darkwebResults').classList.remove('hidden');
         document.getElementById('darkwebResults').style.opacity = '1';
-        renderDarkWebData(target);
+        renderDarkWebData(data);
         showToast('Dark Web Scan Completed!', 'success');
-    }, 2500);
+    } catch (err) {
+        document.getElementById('darkwebLoading').classList.add('hidden');
+        const resultsEl = document.getElementById('darkwebResults');
+        resultsEl.classList.remove('hidden');
+        resultsEl.innerHTML = `
+            <div style="text-align:center; padding: 60px; color: var(--text-muted);">
+                <div style="font-size: 40px; margin-bottom: 20px; opacity: 0.4;">⚠️</div>
+                <div style="color: var(--red); font-weight: 600; margin-bottom: 8px;">Dark Web Scan Failed</div>
+                <div style="font-size: 13px;">${err.message}</div>
+            </div>`;
+        showToast('Dark Web Scan failed: ' + err.message, 'error');
+    }
 }
 
-function renderDarkWebData(target) {
-    // Generate deterministic but varied data per target
-    const seed = target.split('').reduce((s, c) => s + c.charCodeAt(0), 0);
-    const exposed = 800 + (seed % 1200);
-    const leaked = 100 + (seed % 500);
-    const mentions = 3 + (seed % 25);
-    const riskScore = 40 + (seed % 50);
-
-    // Update metrics
-    document.querySelector('.darkweb-value-1').textContent = exposed.toLocaleString();
-    document.querySelector('.darkweb-value-2').textContent = leaked.toLocaleString();
-    document.querySelector('.darkweb-value-3').textContent = mentions.toString();
-
-    // Render threat timeline
-    const liveFeed = document.querySelector('.darkweb-live-feed');
-    const torNodes = ['185.220.101.47', '45.153.160.2', '198.96.155.3', '199.87.154.255'];
-    const torNode = torNodes[seed % torNodes.length];
-
-    liveFeed.innerHTML = `
-        <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px">
-            <div style="font-size:22px">🕵️</div>
-            <div style="flex:1">
-                <div style="display:flex;justify-content:space-between"><strong>Exfiltrated Data Set Found — BreachForums</strong><span style="font-size:11px;color:var(--text-muted)">2 hrs ago</span></div>
-                <div style="font-size:13px;color:var(--text-secondary);margin:4px 0">Dataset matching <span style="color:var(--cyan)">${target}</span> found containing ${(leaked * 0.6 | 0).toLocaleString()} internal employee emails and hashed passwords.</div>
-                <div style="display:flex;gap:8px;margin-top:8px"><span class="severity-badge severity-critical">CRITICAL</span><span style="background:rgba(239,68,68,0.15);color:var(--red);padding:2px 8px;border-radius:12px;font-size:11px">Data Breach</span></div>
+function renderDarkWebData(data) {
+    const { target, metrics, live_feed, timeline_seed } = data;
+    const resultsArea = document.getElementById('darkwebResults');
+    
+    // Rebuild the results structure dynamically to ensure all elements exist
+    resultsArea.innerHTML = `
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Exposed Assets</div>
+                <div class="metric-value darkweb-value-1" style="color: var(--red);">0</div>
+                <div class="metric-change up">+${Math.floor(Math.random() * 50)} this week</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Leaked Credentials</div>
+                <div class="metric-value darkweb-value-2" style="color: var(--orange);">0</div>
+                <div class="metric-change">From active breaches</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">APT Mentions</div>
+                <div class="metric-value darkweb-value-3" style="color: var(--purple);">0</div>
+                <div class="metric-change">In underground forums</div>
             </div>
         </div>
-        <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px">
-            <div style="font-size:22px">🔑</div>
-            <div style="flex:1">
-                <div style="display:flex;justify-content:space-between"><strong>VPN Credentials Active on Telegram — Access Broker</strong><span style="font-size:11px;color:var(--text-muted)">14 hrs ago</span></div>
-                <div style="font-size:13px;color:var(--text-secondary);margin:4px 0">${4 + (seed % 8)} plaintext credentials for systems in <span style="color:var(--cyan)">${target}</span>'s IP range. Russian access broker community. Active listing price: $350.</div>
-                <div style="display:flex;gap:8px;margin-top:8px"><span class="severity-badge severity-critical">CRITICAL</span><span style="background:rgba(249,115,22,0.15);color:var(--orange);padding:2px 8px;border-radius:12px;font-size:11px">Credential Leak</span></div>
+        
+        <div style="display:flex; flex-wrap:wrap; gap:24px; width:100%; align-items: stretch; margin-top: 24px;">
+            <div class="card card-full" style="flex: 1 1 calc(50% - 24px); min-width: 320px;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📊</span> Breach Activity Timeline (6mo)</div>
+                </div>
+                <div id="breachTimeline" style="padding:12px 0; height: 300px;"></div>
             </div>
-        </div>
-        <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px">
-            <div style="font-size:22px">💬</div>
-            <div style="flex:1">
-                <div style="display:flex;justify-content:space-between"><strong>Ransomware Syndicate Planning — TOR Forum</strong><span style="font-size:11px;color:var(--text-muted)">3 days ago</span></div>
-                <div style="font-size:13px;color:var(--text-secondary);margin:4px 0">LockBit affiliate discussed potential ingress via exposed SSH on <span style="color:var(--cyan)">${target}</span>. TOR exit node <span class="font-mono" style="color:var(--yellow)">${torNode}</span> coordinating.</div>
-                <div style="display:flex;gap:8px;margin-top:8px"><span class="severity-badge severity-high">HIGH</span><span style="background:rgba(139,92,246,0.15);color:var(--purple);padding:2px 8px;border-radius:12px;font-size:11px">APT Chatter</span></div>
-            </div>
-        </div>
-        <div style="padding:14px;display:flex;align-items:flex-start;gap:14px">
-            <div style="font-size:22px">🌐</div>
-            <div style="flex:1">
-                <div style="display:flex;justify-content:space-between"><strong>IP Range Listed on Shodan/Censys — Automated Scanners</strong><span style="font-size:11px;color:var(--text-muted)">5 days ago</span></div>
-                <div style="font-size:13px;color:var(--text-secondary);margin:4px 0">Target <span style="color:var(--cyan)">${target}</span> indexed by ${2 + (seed % 4)} automated recon frameworks. Open ports exposed to global scanners. ${exposed} Internet-connected assets identified.</div>
-                <div style="display:flex;gap:8px;margin-top:8px"><span class="severity-badge severity-medium">MEDIUM</span><span style="background:rgba(16,185,129,0.15);color:var(--green);padding:2px 8px;border-radius:12px;font-size:11px">Passive Recon</span></div>
+            <div class="card card-full" style="flex: 1 1 calc(50% - 24px); min-width: 320px;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📜</span> Recent Dark Web Detections</div>
+                </div>
+                <div class="data-table darkweb-live-feed"></div>
             </div>
         </div>
     `;
+
+    // Update metrics with safety
+    const v1 = document.querySelector('.darkweb-value-1');
+    const v2 = document.querySelector('.darkweb-value-2');
+    const v3 = document.querySelector('.darkweb-value-3');
+    
+    if (v1) v1.textContent = metrics.exposed_assets.toLocaleString();
+    if (v2) v2.textContent = metrics.leaked_credentials.toLocaleString();
+    if (v3) v3.textContent = metrics.apt_mentions.toString();
+
+    // Render threat detections
+    const liveFeedContainer = document.querySelector('.darkweb-live-feed');
+    if (liveFeedContainer) {
+        liveFeedContainer.innerHTML = live_feed.map(item => `
+            <div style="padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px">
+                <div style="font-size:22px">${item.icon}</div>
+                <div style="flex:1">
+                    <div style="display:flex;justify-content:space-between"><strong>${item.title}</strong><span style="font-size:11px;color:var(--text-muted)">${item.time}</span></div>
+                    <div style="font-size:13px;color:var(--text-secondary);margin:4px 0">${item.desc}</div>
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <span class="severity-badge ${item.severity_class}">${item.severity}</span>
+                        <span style="background:${item.tag_bg};color:${item.tag_color};padding:2px 8px;border-radius:12px;font-size:11px">${item.type}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
 
     // Animate breach timeline bars
     const breachTimeline = document.getElementById('breachTimeline');
     if (breachTimeline) {
         const months = ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'];
+        const seed = timeline_seed || 42;
         const bars = months.map((m, i) => {
-            const h = 20 + ((seed * (i + 1)) % 80);
+            const h = 20 + ((seed * (i + 1)) % 180);
             return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px">
-                <div style="width:36px;height:${h}px;background:linear-gradient(180deg,var(--red),rgba(239,68,68,0.2));border-radius:4px 4px 0 0;transition:height 0.6s ease"></div>
+                <div style="width:36px;height:${h}px;background:linear-gradient(180deg,var(--red),rgba(239,68,68,0.2));border-radius:4px 4px 0 0;transition:height 0.8s ease-out"></div>
                 <div style="font-size:10px;color:var(--text-muted)">${m}</div>
             </div>`;
         });
-        breachTimeline.innerHTML = `<div style="display:flex;align-items:flex-end;gap:8px;height:100px;padding:0 8px">${bars.join('')}</div>`;
+        breachTimeline.innerHTML = `<div style="display:flex;align-items:flex-end;justify-content:space-around;height:250px;padding:0 8px">${bars.join('')}</div>`;
     }
 }
 
@@ -1869,44 +1913,48 @@ function renderDarkWebData(target) {
 // QUANTUM THREATS — Full Cryptographic Audit
 // ═══════════════════════════════════════════════════════════════
 
-function runQuantumScan() {
+async function runQuantumScan() {
     const target = document.getElementById('quantumIP').value.trim();
     if (!target) {
         showToast('Please enter a target domain or IP', 'error');
         return;
     }
     document.getElementById('quantumLoading').classList.remove('hidden');
-    document.getElementById('quantumResults').style.opacity = '0.3';
-    setTimeout(() => {
+    document.getElementById('quantumResults').classList.add('hidden');
+    
+    try {
+        const data = await api('/api/quantum/scan', {
+            method: 'POST',
+            body: JSON.stringify({ target: target })
+        });
         document.getElementById('quantumLoading').classList.add('hidden');
+        document.getElementById('quantumResults').classList.remove('hidden');
         document.getElementById('quantumResults').style.opacity = '1';
-        renderQuantumData(target);
+        renderQuantumData(data);
         showToast('Quantum Cryptographic Analysis Completed!', 'success');
-    }, 3000);
+    } catch (err) {
+        document.getElementById('quantumLoading').classList.add('hidden');
+        const resultsEl = document.getElementById('quantumResults');
+        resultsEl.classList.remove('hidden');
+        // Restore table placeholder on error
+        const tbody = document.getElementById('quantumDataTable');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: var(--red);">⚠️ Scan failed: ${err.message}</td></tr>`;
+        }
+        const roadmap = document.getElementById('quantumRoadmap');
+        if (roadmap) {
+            roadmap.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Awaiting cryptographic scan results...</div>`;
+        }
+        showToast('Quantum Scan failed: ' + err.message, 'error');
+    }
 }
 
-const QUANTUM_CRYPTO_CATALOG = [
-    { entity: 'Web Server TLS Handshake', algo: 'RSA-2048 / SHA-256', status: 'critical', pqc: 'CRYSTALS-Kyber + Dilithium2', shors: true, grovers: false },
-    { entity: 'Database Connection Pool', algo: 'ECDHE-RSA-AES256-GCM', status: 'critical', pqc: 'CRYSTALS-Kyber768 (NIST Std)', shors: true, grovers: false },
-    { entity: 'Code Signing Certificates', algo: 'ECDSA P-384 / NIST', status: 'high', pqc: 'CRYSTALS-Dilithium3 (NIST Std)', shors: true, grovers: false },
-    { entity: 'VPN Tunnel (IPSec IKEv2)', algo: 'Diffie-Hellman 2048-bit', status: 'critical', pqc: 'Classic McEliece + XMSS', shors: true, grovers: false },
-    { entity: 'API Gateway JWT Signing', algo: 'HMAC-SHA256', status: 'safe', pqc: 'Current algo is quantum-resistant', shors: false, grovers: true },
-    { entity: 'SSH Key Exchange', algo: 'ECDH curve25519', status: 'high', pqc: 'CRYSTALS-Kyber512 + Kyber768', shors: true, grovers: false },
-    { entity: 'S3/Cloud Storage Encryption', algo: 'AES-128-CBC', status: 'medium', pqc: 'AES-256-GCM (Grover safe)', shors: false, grovers: true },
-    { entity: 'Email S/MIME Encryption', algo: 'RSA-4096', status: 'high', pqc: 'FALCON-512 (NIST Std)', shors: true, grovers: false },
-];
+function renderQuantumData(data) {
+    const { target, catalog, roadmap, score } = data;
 
-const PQC_ROADMAP = [
-    { phase: 'Phase 1 — Assessment', timeline: '0-3 months', tasks: ['Cryptographic inventory audit', 'HNDL exposure risk scoring', 'PQC vendor evaluation'], done: true },
-    { phase: 'Phase 2 — Pilot Migration', timeline: '3-9 months', tasks: ['Deploy hybrid TLS with Kyber', 'Update SSH key exchange', 'Test code signing with Dilithium'], done: false },
-    { phase: 'Phase 3 — Full Rollout', timeline: '9-18 months', tasks: ['Replace all RSA/ECC endpoints', 'Rotate all certificates', 'Update VPN infrastructure to PQC'], done: false },
-    { phase: 'Phase 4 — Certification', timeline: '18-24 months', tasks: ['NIST PQC compliance audit', 'Third-party penetration test', 'Quantum agility documentation'], done: false },
-];
-
-function renderQuantumData(target) {
     const tbody = document.getElementById('quantumDataTable');
     if (tbody) {
-        tbody.innerHTML = QUANTUM_CRYPTO_CATALOG.map(r => `
+        tbody.innerHTML = catalog.map(r => `
             <tr>
                 <td style="font-size:13px">${r.entity}</td>
                 <td class="font-mono" style="font-size:11px;color:var(--yellow)">${r.algo}</td>
@@ -1922,9 +1970,9 @@ function renderQuantumData(target) {
         `).join('');
     }
 
-    const roadmap = document.getElementById('quantumRoadmap');
-    if (roadmap) {
-        roadmap.innerHTML = PQC_ROADMAP.map((p, i) => `
+    const roadmapEl = document.getElementById('quantumRoadmap');
+    if (roadmapEl) {
+        roadmapEl.innerHTML = roadmap.map((p, i) => `
             <div style="display:flex;gap:16px;padding:16px;background:rgba(0,0,0,0.2);border-radius:10px;border-left:3px solid ${p.done ? 'var(--green)' : i === 1 ? 'var(--cyan)' : 'rgba(255,255,255,0.2)'}">
                 <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${p.done ? 'var(--green-dim)' : i === 1 ? 'rgba(0,229,255,0.15)' : 'rgba(255,255,255,0.05)'};color:${p.done ? 'var(--green)' : i === 1 ? 'var(--cyan)' : 'var(--text-muted)'};font-weight:700;font-size:14px">${p.done ? '✓' : i + 1}</div>
                 <div style="flex:1">
@@ -1940,31 +1988,24 @@ function renderQuantumData(target) {
         `).join('');
     }
 
-    // Calculate quantum readiness score
-    const vulnCount = QUANTUM_CRYPTO_CATALOG.filter(r => r.shors).length;
-    const totalCount = QUANTUM_CRYPTO_CATALOG.length;
-    const score = Math.round(((totalCount - vulnCount) / totalCount) * 100);
     const scoreEl = document.getElementById('quantumReadinessScore');
     if (scoreEl) {
         scoreEl.textContent = score + '%';
         scoreEl.style.color = score < 30 ? 'var(--red)' : score < 60 ? 'var(--orange)' : 'var(--green)';
     }
 
-    // Render readiness gauge using canvas
     const canvas = document.getElementById('quantumGauge');
     if (canvas) {
         const ctx = canvas.getContext('2d');
         const cx = canvas.width / 2, cy = canvas.height / 2, r = Math.min(cx, cy) - 10;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Background arc
         ctx.beginPath();
         ctx.arc(cx, cy, r, Math.PI, 2 * Math.PI);
         ctx.strokeStyle = 'rgba(255,255,255,0.08)';
         ctx.lineWidth = 14;
         ctx.stroke();
 
-        // Value arc
         const endAngle = Math.PI + (Math.PI * score / 100);
         const grad = ctx.createLinearGradient(0, cy, canvas.width, cy);
         grad.addColorStop(0, '#ef4444');
@@ -2006,12 +2047,48 @@ function animateCounterTo(selector, val) {
 // Section Initialization — Called When Switching Sections
 // ═══════════════════════════════════════════════════════════════
 
-const _origSwitchSection = switchSection;
-switchSection = function(section) {
-    _origSwitchSection(section);
-    if (section === 'threat-intel') initThreatIntel();
-    if (section === 'mitre') renderMITREMatrix();
-};
+// (Section-specific inits are now handled directly inside switchSection above)
+
+// ── Dark Web Section Init ────────────────────────────────────────
+function initDarkwebSection() {
+    const targetInput = document.getElementById('darkwebTarget');
+    const resultsArea = document.getElementById('darkwebResults');
+    if (!targetInput || !resultsArea) return;
+
+    // Auto-populate the input field from last scanned IP
+    if (!targetInput.value) {
+        targetInput.value = state.lastScannedIP || 'acme-corp.com';
+    }
+
+    // Only auto-scan if results haven't been shown yet
+    const alreadyScanned = resultsArea.querySelector('.metrics-grid') !== null;
+    if (!alreadyScanned) {
+        runDarkWebScan();
+    }
+}
+
+// ── Quantum Section Init ─────────────────────────────────────────
+function initQuantumSection() {
+    const targetInput = document.getElementById('quantumIP');
+    const resultsArea = document.getElementById('quantumResults');
+    if (!targetInput || !resultsArea) return;
+
+    // Auto-populate the input field from last scanned IP
+    if (!targetInput.value) {
+        targetInput.value = state.lastScannedIP || 'acme-corp.com';
+    }
+
+    // Only auto-scan if the data table still shows placeholder
+    const alreadyScanned = (() => {
+        const tbody = document.getElementById('quantumDataTable');
+        if (!tbody) return false;
+        return tbody.querySelectorAll('tr td[colspan]').length === 0 && tbody.children.length > 0;
+    })();
+
+    if (!alreadyScanned) {
+        runQuantumScan();
+    }
+}
 
 // ═══════════════════════════════════════════════════════════════
 // Make Simulation "Interesting" - Animation
@@ -2087,33 +2164,9 @@ setInterval(() => {
 }, 2000);
 
 // ═══════════════════════════════════════════════════════════════
-// FINAL SECTION WRAPPER & AUTO-INITIALIZATION
+// FINAL AUTO-INITIALIZATION
 // ═══════════════════════════════════════════════════════════════
-
-// Override switchSection one final time to handle all new modules
-const _finalSwitchSection = switchSection;
-switchSection = function(section) {
-    _finalSwitchSection(section);
-    
-    // Auto-fill and Auto-init logic for specialized modules
-    if (section === 'darkweb') {
-        const targetInput = document.getElementById('darkwebTarget');
-        const resultsHidden = document.getElementById('darkwebResults').classList.contains('hidden');
-        if (!targetInput.value || targetInput.value === '' || resultsHidden) {
-            targetInput.value = targetInput.value || state.lastScannedIP || 'acme.corp';
-            runDarkWebScan(); // Automatically show data
-        }
-    }
-    
-    if (section === 'quantum') {
-        const targetInput = document.getElementById('quantumIP');
-        const resultsHidden = document.getElementById('quantumResults').classList.contains('hidden');
-        if (!targetInput.value || targetInput.value === '' || resultsHidden) {
-            targetInput.value = targetInput.value || state.lastScannedIP || 'acme.corp';
-            runQuantumScan(); // Automatically show data
-        }
-    }
-};
+// (All section init logic is now handled inside switchSection directly)
 
 // Ensure all metrics pulse occasionally
 setInterval(() => {
