@@ -18,10 +18,10 @@ class Settings:
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = int(os.getenv("PORT", 8000))
 
-    # Database
+    # Database - use /data/ for Render persistent disk, fallback to local for dev
     DATABASE_URL = os.getenv(
         "DATABASE_URL",
-        "sqlite:///./acdrip_plus.db"
+        "sqlite:////data/acdrip_plus.db" if os.path.exists("/data") else "sqlite:///./acdrip_plus.db"
     )
 
     # JWT Authentication

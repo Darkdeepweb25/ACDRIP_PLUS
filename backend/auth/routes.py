@@ -48,6 +48,18 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, v):
+        return v.lower().strip()
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_not_empty(cls, v):
+        if not v:
+            raise ValueError("Password cannot be empty")
+        return v
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -101,11 +113,19 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(req: LoginRequest, db: Session = Depends(get_db)):
     """Authenticate user and return JWT token."""
-    user = db.query(User).filter(User.email == req.email.lower().strip()).first()
-    if not user or not verify_password(req.password, user.password_hash):
+    # Email is already normalized by the validator
+    user = db.query(User).filter(User.email == req.email).first()
+    
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password"
+            detail="No account found with this email. Please register first."
+        )
+    
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password. Please try again."
         )
 
     if not user.is_active:

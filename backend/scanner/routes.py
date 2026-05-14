@@ -57,56 +57,63 @@ def _generate_scan_id() -> str:
 @router.post("/public-scan")
 def public_scan(req: ScanRequest, db: Session = Depends(get_db)):
     """Run a quick scan without authentication (landing page)."""
-    result = run_scan(req.target_ip)
+    try:
+        result = run_scan(req.target_ip)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scan execution failed: {str(e)}")
 
     if "error" in result:
         raise HTTPException(status_code=500, detail=result["error"])
 
-    scan = db.query(Scan).filter(Scan.target_ip == req.target_ip, Scan.user_id == None).first()
-    
-    if scan:
-        scan.status = "completed"
-        scan.completed_at = datetime.now(timezone.utc)
-        scan.risk_score = result["risk_score"]
-        scan.risk_level = result["risk_level"]
-        scan.open_ports = result["open_ports"]
-        scan.services = result["services"]
-        scan.os_detection = result.get("os_detection")
-        db.query(Vulnerability).filter(Vulnerability.scan_id == scan.id).delete()
-        scan_id = scan.scan_id
-    else:
-        scan_id = _generate_scan_id()
-        scan = Scan(
-            scan_id=scan_id,
-            target_ip=req.target_ip,
-            status="completed",
-            completed_at=datetime.now(timezone.utc),
-            risk_score=result["risk_score"],
-            risk_level=result["risk_level"],
-            open_ports=result["open_ports"],
-            services=result["services"],
-            os_detection=result.get("os_detection"),
-        )
-        db.add(scan)
+    try:
+        scan = db.query(Scan).filter(Scan.target_ip == req.target_ip, Scan.user_id == None).first()
         
-    db.flush()
+        if scan:
+            scan.status = "completed"
+            scan.completed_at = datetime.now(timezone.utc)
+            scan.risk_score = result["risk_score"]
+            scan.risk_level = result["risk_level"]
+            scan.open_ports = result["open_ports"]
+            scan.services = result["services"]
+            scan.os_detection = result.get("os_detection")
+            db.query(Vulnerability).filter(Vulnerability.scan_id == scan.id).delete()
+            scan_id = scan.scan_id
+        else:
+            scan_id = _generate_scan_id()
+            scan = Scan(
+                scan_id=scan_id,
+                target_ip=req.target_ip,
+                status="completed",
+                completed_at=datetime.now(timezone.utc),
+                risk_score=result["risk_score"],
+                risk_level=result["risk_level"],
+                open_ports=result["open_ports"],
+                services=result["services"],
+                os_detection=result.get("os_detection"),
+            )
+            db.add(scan)
+            
+        db.flush()
 
-    # Save vulnerabilities
-    for v in result.get("vulnerabilities", []):
-        vuln = Vulnerability(
-            scan_id=scan.id,
-            cve_id=v["cve_id"],
-            port=v["port"],
-            service=v["service"],
-            severity=v["severity"],
-            cvss_score=v["cvss_score"],
-            description=v["description"],
-            recommendation=v["recommendation"],
-        )
-        db.add(vuln)
+        # Save vulnerabilities
+        for v in result.get("vulnerabilities", []):
+            vuln = Vulnerability(
+                scan_id=scan.id,
+                cve_id=v["cve_id"],
+                port=v["port"],
+                service=v["service"],
+                severity=v["severity"],
+                cvss_score=v["cvss_score"],
+                description=v["description"],
+                recommendation=v["recommendation"],
+            )
+            db.add(vuln)
 
-    db.commit()
-    db.refresh(scan)
+        db.commit()
+        db.refresh(scan)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
     result["scan_id"] = scan_id
     result["db_id"] = scan.id
@@ -122,57 +129,64 @@ def authenticated_scan(
     current_user: User = Depends(get_current_user),
 ):
     """Run a full scan as an authenticated user."""
-    result = run_scan(req.target_ip)
+    try:
+        result = run_scan(req.target_ip)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Scan execution failed: {str(e)}")
 
     if "error" in result:
         raise HTTPException(status_code=500, detail=result["error"])
 
-    # Check if scan exists for the same IP
-    scan = db.query(Scan).filter(Scan.target_ip == req.target_ip, Scan.user_id == current_user.id).first()
-    
-    if scan:
-        scan.status = "completed"
-        scan.completed_at = datetime.now(timezone.utc)
-        scan.risk_score = result["risk_score"]
-        scan.risk_level = result["risk_level"]
-        scan.open_ports = result["open_ports"]
-        scan.services = result["services"]
-        scan.os_detection = result.get("os_detection")
-        db.query(Vulnerability).filter(Vulnerability.scan_id == scan.id).delete()
-        scan_id = scan.scan_id
-    else:
-        scan_id = _generate_scan_id()
-        scan = Scan(
-            scan_id=scan_id,
-            user_id=current_user.id,
-            target_ip=req.target_ip,
-            status="completed",
-            completed_at=datetime.now(timezone.utc),
-            risk_score=result["risk_score"],
-            risk_level=result["risk_level"],
-            open_ports=result["open_ports"],
-            services=result["services"],
-            os_detection=result.get("os_detection"),
-        )
-        db.add(scan)
-    
-    db.flush()
+    try:
+        # Check if scan exists for the same IP
+        scan = db.query(Scan).filter(Scan.target_ip == req.target_ip, Scan.user_id == current_user.id).first()
+        
+        if scan:
+            scan.status = "completed"
+            scan.completed_at = datetime.now(timezone.utc)
+            scan.risk_score = result["risk_score"]
+            scan.risk_level = result["risk_level"]
+            scan.open_ports = result["open_ports"]
+            scan.services = result["services"]
+            scan.os_detection = result.get("os_detection")
+            db.query(Vulnerability).filter(Vulnerability.scan_id == scan.id).delete()
+            scan_id = scan.scan_id
+        else:
+            scan_id = _generate_scan_id()
+            scan = Scan(
+                scan_id=scan_id,
+                user_id=current_user.id,
+                target_ip=req.target_ip,
+                status="completed",
+                completed_at=datetime.now(timezone.utc),
+                risk_score=result["risk_score"],
+                risk_level=result["risk_level"],
+                open_ports=result["open_ports"],
+                services=result["services"],
+                os_detection=result.get("os_detection"),
+            )
+            db.add(scan)
+        
+        db.flush()
 
-    for v in result.get("vulnerabilities", []):
-        vuln = Vulnerability(
-            scan_id=scan.id,
-            cve_id=v["cve_id"],
-            port=v["port"],
-            service=v["service"],
-            severity=v["severity"],
-            cvss_score=v["cvss_score"],
-            description=v["description"],
-            recommendation=v["recommendation"],
-        )
-        db.add(vuln)
+        for v in result.get("vulnerabilities", []):
+            vuln = Vulnerability(
+                scan_id=scan.id,
+                cve_id=v["cve_id"],
+                port=v["port"],
+                service=v["service"],
+                severity=v["severity"],
+                cvss_score=v["cvss_score"],
+                description=v["description"],
+                recommendation=v["recommendation"],
+            )
+            db.add(vuln)
 
-    db.commit()
-    db.refresh(scan)
+        db.commit()
+        db.refresh(scan)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database persistence error: {str(e)}")
 
     result["scan_id"] = scan_id
     result["db_id"] = scan.id

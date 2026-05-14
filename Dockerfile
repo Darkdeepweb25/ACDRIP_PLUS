@@ -17,17 +17,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ /app/
 COPY frontend/ /app/frontend/
 
-# Create reports directory
-RUN mkdir -p /app/reports_output
+# Create required directories
+RUN mkdir -p /app/reports_output && mkdir -p /data
 
 # Expose port
 EXPOSE 8000
 
 # Set environment variables
 ENV HOST=0.0.0.0
-ENV PORT=8000
+ENV PORT=10000
 ENV DEBUG=false
-ENV DATABASE_URL=sqlite:///./acdrip_plus.db
+ENV DATABASE_URL=sqlite:////data/acdrip_plus.db
 
 # Run the application using the dynamic PORT environment variable
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT
