@@ -9,7 +9,7 @@
 // Configuration & State
 // ═══════════════════════════════════════════════════════════════
 
-const API_BASE = window.location.origin;
+const API_BASE = 'https://acdrip-plus.onrender.com';
 const state = {
     token: localStorage.getItem('acdrip_token'),
     user: JSON.parse(localStorage.getItem('acdrip_user') || 'null'),
